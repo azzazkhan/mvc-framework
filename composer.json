@@ -1,0 +1,28 @@
+{
+    "name": "azzazkhan/mvc-framework",
+    "description": "A custom built MVC framework",
+    "type": "project",
+    "license": "MIT",
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "Illuminate\\": "src/",
+            "App\\": "app/"
+        },
+        "files": [
+            "src/Support/helpers.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Azzaz Khan",
+            "email": "25636920+azzazkhan@users.noreply.github.com"
+        }
+    ],
+    "require": {
+        "psr/container": "^2.0"
+    }
+}
