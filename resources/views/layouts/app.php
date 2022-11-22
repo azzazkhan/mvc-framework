@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    ${{ content }}
+    ${{ slot }}
 </body>
 
 </html>

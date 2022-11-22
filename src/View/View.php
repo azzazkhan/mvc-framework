@@ -51,7 +51,7 @@ class View
      * @param  bool  $echo
      * @return string
      */
-    public function render($echo = true): string
+    public function render($echo = false): string
     {
         // Prepare this view's contents with dependencies
         $content = File::getBuffered($this->path, $this->data);
@@ -70,13 +70,15 @@ class View
             }
         }
 
-        // If this view has a parent layout then get it's content and place
-        // current view's compiled markup with layout's default slot
+        // // If this view has a parent layout then get it's content and place
+        // // current view's compiled markup with layout's default slot
         if (isset($this->layout)) {
-            $content = preg_replace(
+            $layout = $this->layout->render(false);
+
+            echo preg_replace(
                 static::getSlotRegex($this->layout->getDefaultSlot()),
                 $content,
-                $this->layout->render(false)
+                $layout
             );
         }
 

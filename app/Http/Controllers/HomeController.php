@@ -21,6 +21,8 @@ class HomeController
      */
     public function index()
     {
-        return view('home', ['message' => 'Returned from controller index method']);
+        return view('home', [
+            'message' => 'Returned from controller index method'
+        ])->setLayout('layouts.app');
     }
 }

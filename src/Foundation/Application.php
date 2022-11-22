@@ -4,6 +4,7 @@ namespace Illuminate\Foundation;
 
 use Illuminate\Container\Container;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Routing\Router;
 
 class Application extends Container
@@ -34,6 +35,7 @@ class Application extends Container
         // Critical application bindings
         $this->singleton(Router::class);
         $this->singleton(Request::class);
+        $this->singleton(Response::class);
     }
 
     /**

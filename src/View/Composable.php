@@ -29,12 +29,12 @@ trait Composable
     /**
      * Sets view's parent layout view.
      * 
-     * @param  \Illuminate\View\View  $view
+     * @param  string  $path
      * @return self
      */
-    public function setLayout(View $view): self
+    public function setLayout(string $path): self
     {
-        $this->layout = $view;
+        $this->layout = new View($path);
 
         return $this;
     }

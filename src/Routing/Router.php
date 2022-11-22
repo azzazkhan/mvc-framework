@@ -3,6 +3,7 @@
 namespace Illuminate\Routing;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class Router
@@ -52,7 +53,7 @@ class Router
     private function resolveCallback(mixed $callback)
     {
         if (is_callable($callback) || is_string($callback)) {
-            return $this->resolveCallback(app()->call($callback));
+            return app()->call($callback);
         }
 
         return $callback;
@@ -61,22 +62,23 @@ class Router
     /**
      * Resolves the current URL and returns appropriate response.
      * 
-     * @return void
+     * @return mixed
      */
-    public function resolve(Request $request): mixed
+    public function resolve(Request $request)
     {
         // Resolve path definitions and populate route bindings
         $this->resolvePaths();
 
-        $callback = $this->routes[$request->method][$request->path] ?? null;
-
-        if (!$callback) {
-            dd('Route not found!');
-        }
-
         // If callback is a class method or closure, then resolve it using the
         // container and do further processing on returned results
-        $callback = $this->resolveCallback($callback);
+        $callback = $this->resolveCallback(
+            $this->routes[$request->method][$request->path] ?? null
+        );
+
+        if (!$callback) {
+            app(Response::class)->setStatus(404);
+            return view('errors.404')->render(true);
+        }
 
         // View template provided, render the compiled view
         if ($callback instanceof View) {

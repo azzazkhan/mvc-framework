@@ -1,0 +1,8 @@
+{
+  "name": "htdocs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/azzazkhan/mvc-framework.git",
+  "author": "Azzaz Khan <25636920+azzazkhan@users.noreply.github.com>",
+  "license": "MIT"
+}

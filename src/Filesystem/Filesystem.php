@@ -3,6 +3,7 @@
 namespace Illuminate\Filesystem;
 
 use ErrorException;
+use Exception;
 use FilesystemIterator;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 
@@ -43,17 +44,22 @@ class Filesystem
             $__data = $data;
 
             return (static function () use ($__path, $__data) {
-                ob_start();
+                try {
+                    ob_start();
 
-                extract($__data, EXTR_SKIP);
+                    extract($__data, EXTR_SKIP);
 
-                include_once $__path;
+                    include_once $__path;
 
-                $content = ob_get_clean();
+                    $content = ob_get_clean();
 
-                \ob_end_clean();
+                    if (ob_get_length())
+                        ob_end_clean();
 
-                return $content;
+                    return $content;
+                } catch (Exception $e) {
+                    return '';
+                }
             })();
         }
 
