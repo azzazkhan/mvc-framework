@@ -181,13 +181,16 @@ class Container implements ContainerContract
      * 
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function make(string $abstract): mixed
+    public function make(string $abstract, array $parameters = []): mixed
     {
+
         if ($this->bound($abstract)) {
+
             // The requested binding is registered as singleton and already
             // exists in cache, return the cached instance
-            if (isset($this->instances[$abstract]))
+            if (isset($this->instances[$abstract]) && !$parameters)
                 return $this->instances[$abstract];
+
 
             $concrete = $this->getConcrete($abstract);
 
@@ -199,12 +202,13 @@ class Container implements ContainerContract
             } else {
                 // Concrete is a fully qualified class name, resolve it
                 // using the container and save the instance
-                $instance = $this->resolve($concrete);
+                $instance = $this->resolve($concrete, $parameters);
             }
+
 
             // If the abstract is a singleton then cache the built concrete
             // for subsequent requests
-            if ($this->isShared($abstract)) {
+            if (!$parameters && $this->isShared($abstract)) {
                 $this->instances[$abstract] = $instance;
             }
 
@@ -212,7 +216,7 @@ class Container implements ContainerContract
         }
 
         // The abstract is not bound in the container
-        return $this->resolve($abstract);
+        return $this->resolve($abstract, $parameters);
     }
 
     /**
@@ -242,7 +246,7 @@ class Container implements ContainerContract
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      * @throws \ReflectionException
      */
-    protected function resolve(string $abstract): mixed
+    protected function resolve(string $abstract, array $parameters = []): mixed
     {
         $class = new \ReflectionClass($abstract);
 
@@ -254,54 +258,69 @@ class Container implements ContainerContract
 
 
         $constructor = $class->getConstructor();
-        $parameters = $constructor?->getParameters();
 
-        // No constructor or zero dependencies
-        if (!$constructor || !$parameters)
+        if (!$constructor) // No constructor, means zero dependencies
             return new $abstract;
 
-        $dependencies = array_map(function (\ReflectionParameter $param) use ($abstract) {
+        $dependencies = [];
+
+        foreach ($constructor->getParameters() as $param) {
             $name = $param->getName();
             $type = $param->getType();
 
-            // Default value is already provided, use it
-            if ($param->isDefaultValueAvailable())
-                return $param->getDefaultValue();
+            // The value for parameter is explicitly provided
+            if (array_key_exists($name, $parameters)) {
+                $dependencies[] = $parameters[$name];
 
-            // No type hint was provided
-            if (!$type)
-                throw new BindingResolutionException(
-                    sprintf(
-                        'Failed to resolve class "%s" because param "%s" has no type hint',
-                        $abstract,
-                        $name
-                    )
-                );
-
-            // We currently do not support union type dependencies resolution 
-            if ($type instanceof \ReflectionUnionType)
-                throw new BindingResolutionException(
-                    sprintf(
-                        'Failed to resolve class "%s" because param "%s" has a union type',
-                        $abstract,
-                        $name
-                    )
-                );
-
-            if ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) {
-                return $this->make($type->getName());
+                unset($parameters[$name]);
             }
 
-            throw new BindingResolutionException(
-                sprintf(
-                    'Failed to resolve class "%s" because its dependency "%s" could not be resolved',
-                    $abstract,
-                    $name
-                )
-            );
-        }, $parameters);
+            // Default value is already provided, use it instead
+            elseif ($param->isDefaultValueAvailable()) {
+                $dependencies[] = $param->getDefaultValue();
+            }
 
-        return $class->newInstanceArgs($dependencies);
+            // No type hint was provided
+            // elseif (!$type) {
+            //     throw new BindingResolutionException(
+            //         sprintf(
+            //             'Failed to resolve class "%s" because param "%s" has no type hint',
+            //             $abstract,
+            //             $name
+            //         )
+            //     );
+            // }
+
+            // We currently do not support union type dependencies resolution 
+            // elseif ($type instanceof \ReflectionUnionType) {
+            //     throw new BindingResolutionException(
+            //         sprintf(
+            //             'Failed to resolve class "%s" because param "%s" has a union type',
+            //             $abstract,
+            //             $name
+            //         )
+            //     );
+            // }
+
+            // Class dependency specified with a type hint, resolve it using
+            // the container
+            elseif ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) {
+                $dependencies[] = $this->make($type->getName());
+            }
+
+            // Cannot resolve method/function dependency
+            else {
+                throw new BindingResolutionException(
+                    sprintf(
+                        'Unable to resolve dependency [%s] in %s',
+                        $name,
+                        $param->getDeclaringClass()?->getName() ?: 'Closure'
+                    )
+                );
+            }
+        }
+
+        return $class->newInstanceArgs(array_values(array_merge($dependencies, array_values($parameters))));
     }
 
     /**

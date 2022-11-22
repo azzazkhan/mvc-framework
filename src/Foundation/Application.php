@@ -4,6 +4,7 @@ namespace Illuminate\Foundation;
 
 use Illuminate\Container\Container;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Router;
 
 class Application extends Container
 {
@@ -40,7 +41,7 @@ class Application extends Container
      * 
      * @return void
      */
-    public function run()
+    public function run(): void
     {
         $this->call(Router::class, [], 'resolve');
     }
