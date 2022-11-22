@@ -43,6 +43,6 @@ class Application extends Container
      */
     public function run(): void
     {
-        $this->call(Router::class, [], 'resolve');
+        $this->call('Illuminate\\Routing\\Router@resolve');
     }
 }

@@ -2,4 +2,4 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', view('home', ['message']));
+Route::get('/', 'HomeController@index');
