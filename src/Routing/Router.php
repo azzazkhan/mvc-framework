@@ -46,16 +46,16 @@ class Router
      */
     public function resolve(Request $request)
     {
+        if (!array_key_exists($request->method, $this->routes) || !array_key_exists($request->path, $this->routes[$request->method])) {
+            app(Response::class)->setStatus(404);
+            return print(view('errors.404')->layout('app')->render());
+        }
+
         // If callback is a class method or closure, then resolve it using the
         // container and do further processing on returned results
         $callback = $this->resolveCallback(
             $this->routes[$request->method][$request->path] ?? null
         );
-
-        if (!$callback) {
-            app(Response::class)->setStatus(404);
-            return print(view('errors.404')->layout('app')->render());
-        }
 
         // View template provided, render the compiled view
         if ($callback instanceof View) {
