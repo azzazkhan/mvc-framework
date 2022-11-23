@@ -34,7 +34,7 @@ trait Composable
      */
     public function layout(string $path): self
     {
-        $this->layout = new View($path);
+        $this->layout = new View(sprintf('layouts.%s', $path));
 
         return $this;
     }

@@ -23,6 +23,6 @@ class HomeController
     {
         return view('home', [
             'message' => 'Returned from controller index method'
-        ])->layout('layouts.app');
+        ])->layout('app');
     }
 }

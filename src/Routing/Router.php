@@ -54,13 +54,25 @@ class Router
 
         if (!$callback) {
             app(Response::class)->setStatus(404);
-            return print(view('errors.404')->layout('layouts.app')->render());
+            return print(view('errors.404')->layout('app')->render());
         }
 
         // View template provided, render the compiled view
         if ($callback instanceof View) {
             return print($callback->render());
         }
+
+        // Convert arrays to JSON and send back a valid JSON response
+        if (is_array($callback)) {
+            header('Content-Type: application/json');
+            return print(json_encode($callback, JSON_PRETTY_PRINT));
+        }
+
+        if (is_string($callback) || is_numeric($callback) || is_bool($callback)) {
+            return print($callback);
+        }
+
+        if (is_null($callback)) return;
 
         // TODO: Handle other types of response, such as JSON, strings, files,
         // TODO: downloads, redirects and empty responses.
