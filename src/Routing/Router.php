@@ -54,12 +54,12 @@ class Router
 
         if (!$callback) {
             app(Response::class)->setStatus(404);
-            return view('errors.404')->render(true);
+            return print(view('errors.404')->layout('layouts.app')->render());
         }
 
         // View template provided, render the compiled view
         if ($callback instanceof View) {
-            return $callback->render();
+            return print($callback->render());
         }
 
         // TODO: Handle other types of response, such as JSON, strings, files,

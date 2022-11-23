@@ -32,7 +32,7 @@ trait Composable
      * @param  string  $path
      * @return self
      */
-    public function setLayout(string $path): self
+    public function layout(string $path): self
     {
         $this->layout = new View($path);
 

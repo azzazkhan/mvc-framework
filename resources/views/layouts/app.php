@@ -13,7 +13,7 @@
     <?php vite(['resources/css/tailwind.css']) ?>
 </head>
 
-<body class="bg-red-500">
+<body class="font-sans">
     ${{ slot }}
 
     <?php vite(['resources/ts/main.ts']) ?>

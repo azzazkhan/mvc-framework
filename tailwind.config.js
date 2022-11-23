@@ -1,3 +1,5 @@
+const defaultTheme = require('tailwindcss/defaultTheme');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     content: [
@@ -7,7 +9,16 @@ module.exports = {
         'resources/**/*.{js,jsx,ts,tsx,vue}'
     ],
     theme: {
-        extend: {}
+        extend: {
+            fontFamily: {
+                sans: ['Nunito', ...defaultTheme.fontFamily.sans],
+                serif: ['Cormorant Garamond', ...defaultTheme.fontFamily.serif]
+            },
+            fontSize: {
+                xxxs: '.5rem',
+                xxs: '.625rem'
+            }
+        }
     },
-    plugins: []
+    plugins: [require('@tailwindcss/line-clamp')]
 };
