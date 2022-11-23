@@ -1,3 +1,18 @@
+# Source control
 .git
+
+# Editor settings
 .vscode/
+.idea/
+
+# Dependencies
 vendor/
+node_modules/
+
+# Error and log files
+yarn.error
+*.log
+
+# Built assets
+public/dist/
+
