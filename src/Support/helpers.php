@@ -3,13 +3,96 @@
 use Illuminate\Container\Container;
 use Illuminate\View\View;
 
+if (!function_exists('app')) {
+    /**
+     * Get the available container instance.
+     *
+     * @param  string|null  $abstract
+     * @return mixed
+     */
+    function app(?string $abstract = null): mixed
+    {
+        if (is_null($abstract)) {
+            return Container::getInstance();
+        }
+
+        return Container::getInstance()->make($abstract);
+    }
+}
+
+if (!function_exists('config')) {
+    /**
+     * Get / set the specified configuration value.
+     *
+     * If an array is passed as the key, we will assume you want to set an array of values.
+     *
+     * @param  array|string|null  $key
+     * @param  mixed  $default
+     * @return mixed|\Illuminate\Config\Repository
+     */
+    function config($key = null, $default = null)
+    {
+        if (is_null($key)) {
+            return app('config');
+        }
+
+        if (is_array($key)) {
+            return app('config')->set($key);
+        }
+
+        return app('config')->get($key, $default);
+    }
+}
+
 if (!function_exists('dd')) {
-    function dd(mixed $value)
+    /**
+     * Dumps the provided value and exists the script execution.
+     * 
+     * @param  mixed  $value
+     * @return void
+     */
+    function dd(mixed $value): void
     {
         print('<pre>');
         var_dump($value);
         print('</pre>');
         exit(1);
+    }
+}
+
+if (!function_exists('e')) {
+    /**
+     * Encode HTML special characters in a string.
+     *
+     * @param  string|null  $value
+     * @param  bool  $doubleEncode
+     * @return string
+     */
+    function e(string|null $value, bool $doubleEncode = true): string
+    {
+        return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8', $doubleEncode);
+    }
+}
+
+if (!function_exists('optional')) {
+    /**
+     * Provide access to optional objects.
+     *
+     * @param  mixed  $value
+     * @param  callable|null  $callback
+     * @param  mixed  $default
+     * @return mixed
+     */
+    function optional(
+        mixed $value = null,
+        callable $callback = null,
+        mixed $default = null
+    ): mixed {
+        if (is_null($callback)) {
+            return $default;
+        } elseif (!is_null($value)) {
+            return app()->call($callback, [$value]);
+        }
     }
 }
 
@@ -42,55 +125,6 @@ if (!function_exists('random_str')) {
             $pieces[] = $keyspace[random_int(0, $max)];
         }
         return implode('', $pieces);
-    }
-}
-
-if (!function_exists('app')) {
-    /**
-     * Get the available container instance.
-     *
-     * @param  string|null  $abstract
-     * @return mixed
-     */
-    function app(?string $abstract = null): mixed
-    {
-        if (is_null($abstract)) {
-            return Container::getInstance();
-        }
-
-        return Container::getInstance()->make($abstract);
-    }
-}
-
-if (!function_exists('e')) {
-    /**
-     * Encode HTML special characters in a string.
-     *
-     * @param  string|null  $value
-     * @param  bool  $doubleEncode
-     * @return string
-     */
-    function e(string|null $value, bool $doubleEncode = true): string
-    {
-        return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8', $doubleEncode);
-    }
-}
-
-if (!function_exists('optional')) {
-    /**
-     * Provide access to optional objects.
-     *
-     * @param  mixed  $value
-     * @param  callable|null  $callback
-     * @return mixed
-     */
-    function optional($value = null, callable $callback = null, $default = null)
-    {
-        if (is_null($callback)) {
-            return $default;
-        } elseif (!is_null($value)) {
-            return app()->call($callback, [$value]);
-        }
     }
 }
 

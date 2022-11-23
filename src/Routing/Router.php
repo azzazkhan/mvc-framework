@@ -25,26 +25,6 @@ class Router
     protected string $namespace = 'App\\Http\\Controllers';
 
     /**
-     * Creates a new HTTP router instance.
-     * 
-     * @return self
-     */
-    public function __construct()
-    {
-        // 
-    }
-
-    /**
-     * Resolves HTTP routes.
-     * 
-     * @return void
-     */
-    private function resolvePaths(): void
-    {
-        require_once app('base_path') . '/routes.php';
-    }
-
-    /**
      * Unwraps and resolves callback recursively.
      * 
      * @param  mixed  $callback
@@ -66,9 +46,6 @@ class Router
      */
     public function resolve(Request $request)
     {
-        // Resolve path definitions and populate route bindings
-        $this->resolvePaths();
-
         // If callback is a class method or closure, then resolve it using the
         // container and do further processing on returned results
         $callback = $this->resolveCallback(
