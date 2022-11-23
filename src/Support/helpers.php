@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Container\Container;
+use Illuminate\Support\Asset\Vite;
 use Illuminate\View\View;
 
 if (!function_exists('app')) {
@@ -254,6 +255,16 @@ if (!function_exists('view')) {
     function view(string $path, array $data = []): View
     {
         return new View($path, $data);
+    }
+}
+
+if (!function_exists('vite')) {
+    /**
+     * Prints import tags for specified scripts
+     */
+    function vite(string|array $assets)
+    {
+        Vite::render($assets);
     }
 }
 
