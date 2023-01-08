@@ -13,9 +13,16 @@ class Application extends Container
     /**
      * The application service providers.
      * 
-     * @var array<string, array>
+     * @var array<int, array>
      */
     protected array $providers = [];
+
+    /**
+     * Indicates the service providers should be resolved.
+     * 
+     * @var bool
+     */
+    protected bool $bootProviders = true;
 
     /**
      * Creates new application instance.
@@ -24,7 +31,7 @@ class Application extends Container
     {
         $this->singleton('base_path', fn () => $base_path);
         $this->registerBaseBindings();
-        $this->bootstrapServiceProviders();
+        $this->bootServiceProviders();
     }
 
     /**
@@ -56,34 +63,96 @@ class Application extends Container
      * 
      * @return void
      */
-    protected function bootstrapServiceProviders(): void
+    protected function bootServiceProviders(): void
     {
+        // We do not need to resolve the service providers
+        if (!$this->bootProviders)
+            return;
+
         // Get all declared service providers from the application
-        // configuration repository
-        $serviceProviders = config('app.providers');
+        // configuration repository which are not already registered
+        // within the application
+        $app_providers = array_filter(
+            config('app.providers'),
+            fn (string $provider) => !array_key_exists($provider, $this->providers)
+        );
 
-        // The resolved application service provider instances
-        $providers = [];
+        // Merge the application service providers defined in the application
+        // configuration repository with current list of already registered
+        // application service providers so they can be resolved evenly
+        foreach ($app_providers as $provider)
+            $this->providers[$provider] = [
+                'instance' => null,
+                'registered' => false,
+                'booted' => false
+            ];
 
-        // Resolve all the service providers using the container
-        foreach ($serviceProviders as $provider) {
-            $providers[] = $this->make($provider);
+        // Resolve all the service providers using the container and cache
+        // the instances for later registration and booting process
+        foreach ($this->providers as $provider => $config) {
+            if (!$config['instance'])
+                $this->providers[$provider]['instance'] = $this->make($provider);
         }
 
         // First call the "register" method on all providers so they first
         // bind any application services into the application's global
         // service container for later dependency resolution uses.
-        foreach ($providers as $provider) {
-            $this->call([$provider, 'register']);
+        foreach ($this->providers as $provider => $config) {
+            if (!$config['registered'])
+                $this->call([$config['instance'], 'register']);
+        }
+
+        // If any service provider registered a new service provider into the
+        // application then we need to resolve and call their "register" method
+        // as well. We'll need to checking for such cases
+        foreach ($this->providers as $provider => $config) {
+            if (!$config['instance'] || !$config['registered']) {
+                $this->bootServiceProviders();
+
+                // Break the loop on first case, as we need to iterate over all
+                // service providers again to check their resolution and
+                // registration status
+                break;
+            }
         }
 
         // After all services have been bound to the container then call any
         // application services by calling the "boot" method of providers
-        foreach ($providers as $provider) {
-            $this->call([$provider, 'boot']);
+        foreach ($this->providers as $provider) {
+            if (!$config['booted'])
+                $this->call([$config['instance'], 'boot']);
         }
 
-        $this->providers = $providers;
+        // All application service providers have been resolved, we do not need
+        // to resolve the providers unless we are instructed explicitly, so
+        // we will mark service providers resolution status as resolved
+        $this->bootProviders = false;
+    }
+
+    /**
+     * Register a new service provider into the application.
+     * 
+     * @param  string  $provider
+     * @return void
+     */
+    public function register(string $provider): void
+    {
+        // Check if the application service provider has already been
+        // registered in the application or not, because if it was already
+        // resolved and we register it again then the resolved and booted
+        // instance will be overridden which might introduce unexpected
+        // behaviors
+        if (!array_key_exists($provider, $this->providers)) {
+            $this->providers[$provider] = [
+                'instance' => null,
+                'registered' => false,
+                'booted' => false
+            ];
+
+            // Mark the application service providers resolution status as
+            // unresolved
+            $this->bootProviders = true;
+        }
     }
 
     /**
