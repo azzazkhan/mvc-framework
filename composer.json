@@ -10,7 +10,8 @@
     "autoload": {
         "psr-4": {
             "Illuminate\\": "src/",
-            "App\\": "app/"
+            "App\\": "app/",
+            "Packages\\": "packages/"
         },
         "files": [
             "src/Support/helpers.php"

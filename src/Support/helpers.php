@@ -3,21 +3,36 @@
 use Illuminate\Container\Container;
 use Illuminate\Support\Asset\Vite;
 use Illuminate\View\View;
+use Packages\DotEnv\DotEnv;
 
 if (!function_exists('app')) {
     /**
      * Get the available container instance.
      *
      * @param  string|null  $abstract
+     * @param  array  $parameters
      * @return mixed
      */
-    function app(?string $abstract = null): mixed
+    function app(?string $abstract = null, array $parameters = []): mixed
     {
         if (is_null($abstract)) {
             return Container::getInstance();
         }
 
-        return Container::getInstance()->make($abstract);
+        return Container::getInstance()->make($abstract, $parameters);
+    }
+}
+
+if (!function_exists('base_path')) {
+    /**
+     * Gets the absolute path to the application.
+     * 
+     * @param  string|null  $path
+     * @return string
+     */
+    function base_path(string $path = null): string
+    {
+        return join_path(app('base_path'), $path);
     }
 }
 
@@ -42,6 +57,19 @@ if (!function_exists('config')) {
         }
 
         return app('config')->get($key, $default);
+    }
+}
+
+if (!function_exists('database_path')) {
+    /**
+     * Gets the absolute path to application's database files.
+     * 
+     * @param  string|null  $path
+     * @return string
+     */
+    function database_path(string $path = null): string
+    {
+        return join_path(base_path('database'), $path);
     }
 }
 
@@ -72,6 +100,69 @@ if (!function_exists('e')) {
     function e(string|null $value, bool $doubleEncode = true): string
     {
         return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8', $doubleEncode);
+    }
+}
+
+if (!function_exists('env')) {
+    /**
+     * Get an entry from the system environment.
+     *
+     * @param  string|null  $key
+     * @param  mixed  $default
+     * @return string
+     */
+    function env(string $key = null, mixed $value = null): mixed
+    {
+        if (is_null($key))
+            return app(DotEnv::class);
+
+        return app(DotEnv::class)->get($key, $value);
+    }
+}
+
+if (!function_exists('join_path')) {
+    /**
+     * Join multiple path strings together.
+     * 
+     * @param  array  $paths
+     * @return string
+     */
+    function join_path(...$paths): string
+    {
+        // dd($paths);
+
+        if (count($paths) == 0)
+            return $paths[0];
+
+        $path_strings = [];
+
+        for ($i = 0; $i < count($paths); $i++) {
+            // Do not alter the first element and use it as is
+            if ($i == 0) {
+                $path_strings[] = $paths[$i];
+                continue;
+            }
+
+            $path = $paths[$i];
+
+            // If path is an empty string then do not concat it
+            if (!$path || $path == '/')
+                continue;
+
+            // Remove the leading slash from the path string
+            elseif ($path[0] == '/')
+                $path = substr($path, 1, strlen($paths[$i]));
+
+            // Remove the trailing slash from the path string
+            elseif ($path[strlen($path) - 1] == '/')
+                $path = substr($paths[$i], 0, strlen($paths[$i]) - 1);
+
+            $path_strings[] = $path;
+        }
+
+        $paths = array_filter($paths, fn ($path) => is_string($path) && strlen($path) > 0);
+
+        return str_replace('\\', '/', implode('/', $path_strings));
     }
 }
 
@@ -126,6 +217,19 @@ if (!function_exists('random_str')) {
             $pieces[] = $keyspace[random_int(0, $max)];
         }
         return implode('', $pieces);
+    }
+}
+
+if (!function_exists('resource_path')) {
+    /**
+     * Gets the absolute path to application's resources directory.
+     * 
+     * @param  string|null  $path
+     * @return string
+     */
+    function resource_path(string $path = null): string
+    {
+        return join_path(base_path('resources'), $path);
     }
 }
 
@@ -216,6 +320,22 @@ if (!function_exists('throw_unless')) {
         throw_if(!$condition, $exception, ...$parameters);
 
         return $condition;
+    }
+}
+
+if (!function_exists('uuidv4')) {
+    /**
+     * Generates a v4 UUID using custom implementation.
+     * 
+     * @return string
+     */
+    function uuidv4(): string
+    {
+        $data = random_bytes(16);
+        $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // set version to 0100
+        $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
+
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 }
 

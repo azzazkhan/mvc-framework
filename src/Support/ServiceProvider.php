@@ -3,15 +3,16 @@
 namespace Illuminate\Support;
 
 use Illuminate\Container\Container;
+use Illuminate\Foundation\Application;
 
 abstract class ServiceProvider
 {
     /**
      * The current application container instance.
      * 
-     * @var \Illuminate\Container\Container
+     * @var \Illuminate\Foundation\Application
      */
-    protected Container $app;
+    protected Application $app;
 
     /**
      * Creates new service provider class.

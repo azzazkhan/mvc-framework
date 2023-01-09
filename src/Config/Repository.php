@@ -52,7 +52,7 @@ class Repository
         if ($this->bootstrapped) return;
 
         // Load each config file, prase and store content in config repository
-        foreach (File::glob(sprintf('%s/config/*.php', app('base_path'))) as $filepath) {
+        foreach (File::glob(base_path('config/*.php')) as $filepath) {
             $value = File::getRequire($filepath);
 
             if (!is_array($value)) continue;

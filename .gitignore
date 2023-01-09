@@ -16,3 +16,6 @@ yarn.error
 # Built assets
 public/dist/
 
+.env
+.env.*
+!.env.example
