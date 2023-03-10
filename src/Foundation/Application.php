@@ -17,6 +17,9 @@ class Application extends Container
 
     /**
      * Creates new application instance.
+     * 
+     * @param  string  $base_path
+     * @throws \Exception
      */
     public function __construct(string $base_path)
     {
@@ -68,10 +71,15 @@ class Application extends Container
         $this->singleton(Request::class);
         $this->singleton(Response::class);
 
+
         $this->singleton(DotEnv::class, fn () => new DotEnv(base_path()));
         $this->singleton(ConfigRepository::class);
 
+        // Named bindings
         $this->instance('config', app(ConfigRepository::class));
+        $this->singleton('router', fn (Container $app) => $app->make(Router::class));
+        $this->singleton('request', fn (Container $app) => $app->make(Request::class));
+        $this->singleton('response', fn (Container $app) => $app->make(Response::class));
     }
 
     /**
@@ -81,6 +89,7 @@ class Application extends Container
      */
     public function run(): void
     {
+        // TODO: Migrate application request booting to HTTP Kernel
         $this->call('Illuminate\\Routing\\Router@resolve');
     }
 }

@@ -129,8 +129,6 @@ if (!function_exists('join_path')) {
      */
     function join_path(...$paths): string
     {
-        // dd($paths);
-
         if (count($paths) == 0)
             return $paths[0];
 
@@ -166,6 +164,30 @@ if (!function_exists('join_path')) {
     }
 }
 
+if (!function_exists('loop')) {
+    /**
+     * Calls the passed callable specified number of times and returns the
+     * array of each call's result.
+     *
+     * @param  callable $callback
+     * @param  array  $parameters
+     * @param  int  $times
+     * @return array
+     */
+    function loop(callable $callback, array $parameters = [], int $times = 1): array
+    {
+        if ($times <= 0)
+            return 0;
+
+        $results = [];
+
+        for ($i = 0; $i < $times; $i++)
+            $results[] = call_user_func_array($callback, [...array_values($parameters), $i + 1]);
+
+        return $results;
+    }
+}
+
 if (!function_exists('optional')) {
     /**
      * Provide access to optional objects.
@@ -185,6 +207,18 @@ if (!function_exists('optional')) {
         } elseif (!is_null($value)) {
             return app()->call($callback, [$value]);
         }
+    }
+}
+
+if (!function_exists('random_hex')) {
+    /**
+     * Creates a new hexadecimal string.
+     *
+     * @return string
+     */
+    function random_hex(): string
+    {
+        return strtoupper(str_pad(dechex(rand(0x00000000, 0xFFFFFFFF)), 8, 0, STR_PAD_LEFT));
     }
 }
 
@@ -323,6 +357,26 @@ if (!function_exists('throw_unless')) {
     }
 }
 
+if (!function_exists('unless')) {
+    /**
+     * Uses first value if truthy else pass second value to closure and return
+     * the result.
+     * 
+     * @param  mixed  $test
+     * @param  mixed  $optional
+     * @param  callable  $callback
+     * @param  array  $params
+     * @return
+     */
+    function unless(mixed $test, mixed $optional, callable $callback, array $params = []): mixed
+    {
+        if ($test)
+            return $test;
+
+        return call_user_func($callback, $optional, $params);
+    }
+}
+
 if (!function_exists('uuidv4')) {
     /**
      * Generates a v4 UUID using custom implementation.
@@ -336,18 +390,6 @@ if (!function_exists('uuidv4')) {
         $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
 
         return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
-    }
-}
-
-if (!function_exists('windows_os')) {
-    /**
-     * Determine whether the current environment is Windows based.
-     *
-     * @return bool
-     */
-    function windows_os(): bool
-    {
-        return PHP_OS_FAMILY === 'Windows';
     }
 }
 
@@ -385,6 +427,18 @@ if (!function_exists('vite')) {
     function vite(string|array $assets)
     {
         Vite::render($assets);
+    }
+}
+
+if (!function_exists('windows_os')) {
+    /**
+     * Determine whether the current environment is Windows based.
+     *
+     * @return bool
+     */
+    function windows_os(): bool
+    {
+        return PHP_OS_FAMILY === 'Windows';
     }
 }
 

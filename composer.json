@@ -14,7 +14,8 @@
             "Packages\\": "packages/"
         },
         "files": [
-            "src/Support/helpers.php"
+            "src/Support/helpers.php",
+            "src/Support/CStr.php"
         ]
     },
     "authors": [

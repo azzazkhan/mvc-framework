@@ -84,8 +84,16 @@ class DotEnv
         // If the value references another key then grab the reference key name
         $references = $matches && $matches[1] ? $matches[1] : null;
 
+        // Set null if defined
+        if ($value == "null")
+            $value = null;
+
+        // Set value to empty string if not defined (prevent nullish coalescing)
+        else if (!$value)
+            $value = "";
+
         // Remove the wrapping quotation marks the value was enclosed in
-        if ($value[0] == '"' && $value[strlen($value) - 1] == '"')
+        else if ($value[0] == '"' && $value[strlen($value) - 1] == '"')
             $value = trim($value, '"');
 
         return [$key, $value, $references];
