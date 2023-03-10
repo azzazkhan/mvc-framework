@@ -2,13 +2,11 @@
 
 namespace Illuminate\Support\Facades;
 
-use Illuminate\Routing\Router;
-
 /**
- * @method static Illuminate\Routing\Router get(string $path, \Illuminate\View\View|callable|string $callback)
- * @method static Illuminate\Routing\Router view(string $path, \Illuminate\View\View $view)
+ * @method static \Illuminate\Routing\Router get(string $path, \Illuminate\View\View|callable|string $callback)
+ * @method static \Illuminate\Routing\Router view(string $path, \Illuminate\View\View $view)
  * 
- * @see Illuminate\Routing\Router
+ * @see \Illuminate\Routing\Router
  */
 class Route extends Facade
 {
@@ -19,6 +17,6 @@ class Route extends Facade
      */
     protected static function getFacadeAccessor(): string
     {
-        return Router::class;
+        return 'router';
     }
 }
