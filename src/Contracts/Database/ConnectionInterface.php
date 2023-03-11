@@ -3,7 +3,6 @@
 namespace Illuminate\Contracts\Database;
 
 use Illuminate\Contracts\Database\Query\Builder;
-use PDO;
 
 interface ConnectionInterface
 {
@@ -16,26 +15,34 @@ interface ConnectionInterface
     public function __construct(array $config);
 
     /**
-     * Prepares and executes the provided query.
+     * Prepares the provided query.
      * 
      * @param  string  $query
-     * @param  array  $params
-     * @return mixed
+     * @return \PDOStatement|false
      */
-    public function query(string $query, array $params = []): \PDOStatement;
+    public function query(string $query): \PDOStatement|false;
+
+    /**
+     * Queries the provided query without preparation.
+     * 
+     * @param  string  $query
+     * @return \PDOStatement|false
+     */
+    public function unprepared(string $query): \PDOStatement|false;
 
     /**
      * Returns the underling PDO connection.
      * 
      * @return \PDO
      */
-    public function getPdo(): PDO;
+    public function getPdo(): \PDO;
 
     /**
      * Generates new query.
      * 
      * @param  string  $method
      * @param  array  $params
+     * @return mixed
      */
     public function buildQuery(string $method, array $params = []): Builder;
 }

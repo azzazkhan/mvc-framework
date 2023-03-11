@@ -3,6 +3,7 @@
 namespace Illuminate\Database;
 
 use Illuminate\Contracts\Database\ConnectionInterface;
+use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use Illuminate\Database\Connections\{
@@ -19,9 +20,9 @@ class Database
     ];
 
     /**
-     * Active database connections.
+     * The active connection instances.
      * 
-     * @var array<\Illuminate\Contracts\Database\ConnectionInterface>
+     * @var array<string, \Illuminate\Contracts\Database\ConnectionInterface>
      */
     protected array $connections = [];
 
@@ -85,9 +86,9 @@ class Database
      * @param  string  $method
      * @param  array  $parameters
      * 
-     * @return mixed
+     * @return \Illuminate\Contracts\Database\Query\Builder
      */
-    public function __call(string $method, array $parameters): mixed
+    public function __call(string $method, array $parameters): Builder
     {
         return $this->connection()->buildQuery($method, $parameters);
     }

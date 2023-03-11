@@ -82,9 +82,12 @@ if (!function_exists('dd')) {
      */
     function dd(mixed $value): void
     {
+        app('response')->setStatus(500);
+
         print('<pre>');
         var_dump($value);
         print('</pre>');
+
         exit(1);
     }
 }
@@ -117,6 +120,24 @@ if (!function_exists('env')) {
             return app(DotEnv::class);
 
         return app(DotEnv::class)->get($key, $value);
+    }
+}
+
+if (!function_exists('is_assoc')) {
+    /**
+     * Checks whether the array is associative or not.
+     * 
+     * @param  array  $array
+     * @return bool
+     * 
+     * @see https://stackoverflow.com/a/173479/7588591
+     */
+    function is_assoc(array $array): bool
+    {
+        if (array() === $array)
+            return false;
+
+        return array_keys($array) !== range(0, count($array) - 1);
     }
 }
 

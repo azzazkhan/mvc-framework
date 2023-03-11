@@ -7,7 +7,7 @@ use Illuminate\Database\Database;
 /**
  * @method static \Illuminate\Contracts\Database\Connection connection(string $connection)
  * @method static \Illuminate\Database\Query\Builder table(string $table)
- * @method static \Illuminate\Database\Query\Builder method(mixed param)
+ * @method static \Illuminate\Database\Query\Builder query(string $query, array $bindings = [])
  * 
  * @see \Illuminate\Database\Query\Builder
  */

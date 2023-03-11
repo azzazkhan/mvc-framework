@@ -6,15 +6,16 @@ use Illuminate\Contracts\Database\ConnectionInterface;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use Illuminate\Database\Query\Builder;
 use PDO;
+use PDOStatement;
 
 class MySQLConnection implements ConnectionInterface
 {
     /**
      * The active connection.
      * 
-     * @var \PDO $connection
+     * @var \PDO
      */
-    private PDO $connection;
+    protected PDO $connection;
 
     /**
      * {@inheritdoc}
@@ -40,11 +41,19 @@ class MySQLConnection implements ConnectionInterface
     /**
      * {@inheritdoc}
      */
-    public function query(string $query, array $params = []): \PDOStatement
+    public function query(string $query): PDOStatement|false
     {
         $statement = $this->connection->prepare($query);
 
-        $statement->execute($params);
+        return $statement;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function unprepared(string $query): PDOStatement|false
+    {
+        $statement = $this->connection->query($query);
 
         return $statement;
     }
