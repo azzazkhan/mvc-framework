@@ -2,20 +2,26 @@
 
 namespace Illuminate\Database;
 
-use Illuminate\Contracts\Database\Connection;
-use Illuminate\Contracts\Database\Query\Builder;
-use Illuminate\Database\Connections\{MySQLConnection, PostgresConnection, MSSQLConnection, SQLiteConnection};
+use Illuminate\Contracts\Database\ConnectionInterface;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
+use Illuminate\Database\Connections\{
+    MySQLConnection,
+    PostgresConnection,
+    MSSQLConnection,
+    SQLiteConnection
+};
 
 class Database
 {
-    protected const AVAILABLE_DRIVERS = ['mysql', 'mssql', 'postgres', 'sqlite'];
+    protected const AVAILABLE_DRIVERS = [
+        'mysql', 'mssql', 'postgres', 'sqlite'
+    ];
 
     /**
      * Active database connections.
      * 
-     * @var array<\Illuminate\Contracts\Database\Connection>
+     * @var array<\Illuminate\Contracts\Database\ConnectionInterface>
      */
     protected array $connections = [];
 
@@ -23,10 +29,10 @@ class Database
      * Constructs and caches the specified database connection.
      * 
      * @param  string|null  $connection
-     * @return \Illuminate\Contracts\Database\Connection
+     * @return \Illuminate\Contracts\Database\ConnectionInterface
      * @throws \InvalidArgumentException
      */
-    public function connection(string $connection = null): Connection
+    public function connection(string $connection = null): ConnectionInterface
     {
         $connection = $connection ?: config('database.default');
 
@@ -64,15 +70,25 @@ class Database
     }
 
     /**
+     * Get the cached database connections.
+     * 
+     * @return array<\Illuminate\Contracts\Database\ConnectionInterface>
+     */
+    public function getConnections(): array
+    {
+        return $this->connections;
+    }
+
+    /**
      * Forward calls to default database connection.
      * 
      * @param  string  $method
      * @param  array  $parameters
      * 
-     * @return \Illuminate\Contracts\Database\Connection
+     * @return mixed
      */
-    public function __call(string $method, array $parameters): Builder
+    public function __call(string $method, array $parameters): mixed
     {
-        return $this->connection()->{$method}(...$parameters);
+        return $this->connection()->buildQuery($method, $parameters);
     }
 }

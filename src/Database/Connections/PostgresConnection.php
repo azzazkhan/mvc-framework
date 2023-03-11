@@ -2,9 +2,9 @@
 
 namespace Illuminate\Database\Connections;
 
-use Illuminate\Contracts\Database\Connection as DatabaseConnection;
+use Illuminate\Contracts\Database\ConnectionInterface;
 
-class PostgresConnection implements DatabaseConnection
+class PostgresConnection implements ConnectionInterface
 {
     // 
 }

@@ -2,9 +2,9 @@
 
 namespace Illuminate\Database\Connections;
 
-use Illuminate\Contracts\Database\Connection as DatabaseConnection;
+use Illuminate\Contracts\Database\ConnectionInterface;
 
-class MSSQLConnection implements DatabaseConnection
+class MSSQLConnection implements ConnectionInterface
 {
     // 
 }
