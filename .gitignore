@@ -16,6 +16,10 @@ yarn.error
 # Built assets
 public/dist/
 
+# Environment
 .env
 .env.*
 !.env.example
+
+# Apache server symlinks
+phpmyadmin

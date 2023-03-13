@@ -5,6 +5,7 @@ namespace Illuminate\Database\Query;
 use Illuminate\Contracts\Database\ConnectionInterface;
 use Illuminate\Contracts\Database\Query\Builder as BuilderContract;
 use InvalidArgumentException;
+use LogicException;
 use PDO;
 use PDOStatement;
 
@@ -37,6 +38,13 @@ class Builder implements BuilderContract
      * @var string
      */
     protected string $from;
+
+    /**
+     * The columns to be retrieved.
+     * 
+     * @var array
+     */
+    protected array $columns = ['*'];
 
     /**
      * The current query value bindings.
@@ -158,6 +166,10 @@ class Builder implements BuilderContract
      */
     public function get(): mixed
     {
+        // If no query was specified then get all records from the table
+        if ((!isset($this->query) || !$this->query) && $this->from)
+            $this->unprepared($this->getBaseSelectQuery());
+
         $this->run();
 
         return $this->statement->fetchAll(PDO::FETCH_ASSOC);
@@ -170,6 +182,10 @@ class Builder implements BuilderContract
      */
     public function first(): mixed
     {
+        // If no query was specified then get all records from the table
+        if ((!isset($this->query) || !$this->query) && $this->from)
+            $this->unprepared($this->getBaseSelectQuery());
+
         $this->run();
 
         return $this->statement->fetch(PDO::FETCH_ASSOC);
@@ -178,9 +194,11 @@ class Builder implements BuilderContract
     /**
      * Runs the query.
      * 
+     * @param  bool  $silent
      * @return mixed
+     * @throws \Exception
      */
-    public function run(): bool
+    public function run(bool $silent = true): bool
     {
         try {
             if (is_assoc($this->bindings))
@@ -193,7 +211,10 @@ class Builder implements BuilderContract
                     $this->statement->bindValue($count++, $value);
 
             return $this->statement->execute();
-        } catch (\Exception) {
+        } catch (\Exception $error) {
+            if (!$silent)
+                throw $error;
+
             return false;
         }
     }
@@ -269,12 +290,51 @@ class Builder implements BuilderContract
             $placeholders = implode(', ', array_fill(0, count($data), $placeholders));
         }
 
-        $columns = '`' . implode('`, `', $columns) . '`';
+        $columns = implode(', ', $columns);
         $query = sprintf('INSERT INTO `%s` (%s) VALUES %s', $this->from, $columns, $placeholders);
 
         $query = $this->query($query, $bindings);
 
         return $exec ? $query->run() : $query;
+    }
+
+    /**
+     * Adds columns for selection in select clause.
+     * 
+     * @param  array  $cols
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function select($columns = ['*']): self
+    {
+        $this->columns = is_array($columns) ? $columns : func_get_args();
+
+        return $this;
+    }
+
+    /**
+     * Merges additional selective columns in select clause.
+     * 
+     * @param  array  $cols
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function addSelect($columns = ['*']): self
+    {
+        $this->columns = array_merge(
+            $this->columns,
+            is_array($columns) ? $columns : func_get_args()
+        );
+
+        return $this;
+    }
+
+    /**
+     * Builds the select query if no query was specified.
+     * 
+     * @return string
+     */
+    protected function getBaseSelectQuery()
+    {
+        return sprintf('SELECT %s FROM %s', implode(', ', $this->buildColumns()), $this->from);
     }
 
     /**
@@ -298,5 +358,39 @@ class Builder implements BuilderContract
             return $value ? '1' : '0';
 
         return $value;
+    }
+
+    /**
+     * Returns the selected columns.
+     * 
+     * @return array
+     */
+    public function getColumns(): array
+    {
+        return $this->columns;
+    }
+
+    /**
+     * Generates safe column names for injecting into queries.
+     * 
+     * @return array<string>
+     */
+    protected function buildColumns(): array
+    {
+        $columns = [];
+
+        foreach ($this->columns as $column => $as) {
+            // If column name is the key and raw expression has been passed as
+            // the value then we will combine both to form an alias or a
+            // sub-query expression
+            if (is_string($column) && !is_numeric($column))
+                $columns[] = sprintf('%s %s', $column, $as);
+
+            // Only column name was specified
+            else $columns[] = $as;
+        }
+
+
+        return $columns;
     }
 }
